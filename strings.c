@@ -29,7 +29,7 @@
  *****************************************************************************/
 
 #include "server.h"
-#include <avr/pgmspace.h>
+//#include <avr/pgmspace.h>
 
 
 // This file contains various strings used by the WiServer

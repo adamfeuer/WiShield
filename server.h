@@ -31,7 +31,7 @@
 #ifndef __SERVER_H__
 #define __SERVER_H__
 
-#include <avr/pgmspace.h>
+//#include <avr/pgmspace.h>
 #include <uip-conf.h>
 
 #ifdef APP_WISERVER

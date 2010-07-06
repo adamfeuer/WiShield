@@ -36,7 +36,10 @@
 #define __UIP_CONF_H__
 
 #include <inttypes.h>
-#include <avr/io.h>
+//#include <avr/io.h>
+#include <libmaple_types.h>
+#include <timers.h>
+#include <io.h>
 #include <stdio.h>
 //#include <stdbool.h>
 
