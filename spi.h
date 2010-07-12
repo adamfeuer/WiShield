@@ -95,7 +95,7 @@
 #define SPI0_WaitForSend()				while( (SPSR & 0x80)==0x00 )
 
 #define SPI0_SendByte(Data)				SPI0_TxData(Data);SPI0_WaitForSend()
-#define SPI0_RecvBute()					SPI0_RxData()
+#define SPI0_RecvByte()					SPI0_RxData()
 
 // PB4(MISO), PB3(MOSI), PB5(SCK), PB2(/SS)         // CS=1, waiting for SPI start // SPI mode 0, 8MHz
 #ifdef USE_DIG8_INTR
