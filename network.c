@@ -34,7 +34,7 @@
 
 #include "global-conf.h"
 //#include <avr/io.h>
-#include <util/delay.h>
+//#include <util/delay.h>
 #include <string.h>
 #include "witypes.h"
 #include "g2100.h"

@@ -30,6 +30,7 @@
 
 #include "server.h"
 //#include <avr/pgmspace.h>
+#include "witypes.h"
 
 
 // This file contains various strings used by the WiServer
