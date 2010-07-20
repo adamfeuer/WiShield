@@ -37,8 +37,14 @@
 #include "witypes.h"
 #include "config.h"
 #include "g2100.h"
-#include "spi.h"
+//#include "spi.h"
 #include "global-conf.h"
+
+// for Maple
+#include "nvic.h"
+#include "exti.h"
+//#include "wirish.h"
+#include "maple-spi.h"
 
 static U8 mac[6];
 static U8 zg_conn_status;
@@ -60,8 +66,8 @@ void zg_init()
 	U8 clr;
 
 	ZG2100_SpiInit();
-	clr = SPSR;
-	clr = SPDR;
+	// clr = SPSR;
+	// clr = SPDR;
 
 	intr_occured = 0;
 	intr_valid = 0;
@@ -78,8 +84,10 @@ void zg_init()
 	zg_interrupt_reg(0xff, 0);
 	zg_interrupt_reg(0x80|0x40, 1);
 
-	ssid_len = (U8)strlen_P(ssid);
-	security_passphrase_len = (U8)strlen_P(security_passphrase);
+	//	ssid_len = (U8)strlen_P(ssid);
+	ssid_len = (U8)strlen(ssid);
+	//	security_passphrase_len = (U8)strlen_P(security_passphrase);
+	security_passphrase_len = (U8)strlen(security_passphrase);
 }
 
 void spi_transfer(volatile U8* buf, U16 len, U8 toggle_cs)
@@ -249,6 +257,9 @@ void zg_process_isr()
 		}
 		}
 	} while (intr_state);
+
+	/* Maple: only support INT D2 for now
+
 #ifdef USE_DIG8_INTR
 	// PCINT0 supports only edge triggered INT
 	if (PORTB & 0x01) {
@@ -262,7 +273,16 @@ void zg_process_isr()
 	intr_occured = 0;
 	ZG2100_ISR_ENABLE();
 #endif
+
+	*/
+
+	intr_occured = 0;
+        ZG2100_ISR_ENABLE();
 }
+
+
+
+
 
 void zg_send(U8* buf, U16 len)
 {
@@ -341,8 +361,10 @@ void zg_write_wep_key(U8* cmd_buf)
 	cmd->defID = 0;		// Default key ID: Key 0, 1, 2, 3
 	cmd->ssidLen = ssid_len;
 	memset(cmd->ssid, 0x00, 32);
-	memcpy_P(cmd->ssid, ssid, ssid_len);
-	memcpy_P(cmd->key, wep_keys, ZG_MAX_ENCRYPTION_KEYS * ZG_MAX_ENCRYPTION_KEY_SIZE);
+	//	memcpy_P(cmd->ssid, ssid, ssid_len);
+	//	memcpy_P(cmd->key, wep_keys, ZG_MAX_ENCRYPTION_KEYS * ZG_MAX_ENCRYPTION_KEY_SIZE);
+	memcpy(cmd->ssid, ssid, ssid_len);
+	memcpy(cmd->key, wep_keys, ZG_MAX_ENCRYPTION_KEYS * ZG_MAX_ENCRYPTION_KEY_SIZE);
 
 	return;
 }
@@ -356,9 +378,11 @@ static void zg_calc_psk_key(U8* cmd_buf)
 	cmd->ssidLen = ssid_len;
 	cmd->reserved = 0;
 	memset(cmd->ssid, 0x00, 32);
-	memcpy_P(cmd->ssid, ssid, ssid_len);
+	//	memcpy_P(cmd->ssid, ssid, ssid_len);
+	memcpy(cmd->ssid, ssid, ssid_len);
 	memset(cmd->passPhrase, 0x00, 64);
-	memcpy_P(cmd->passPhrase, security_passphrase, security_passphrase_len);
+	//	memcpy_P(cmd->passPhrase, security_passphrase, security_passphrase_len);
+	memcpy(cmd->passPhrase, security_passphrase, security_passphrase_len);
 
 	return;
 }
@@ -370,7 +394,8 @@ static void zg_write_psk_key(U8* cmd_buf)
 	cmd->slot = 0;	// WPA/WPA2 PSK slot
 	cmd->ssidLen = ssid_len;
 	memset(cmd->ssid, 0x00, 32);
-	memcpy_P(cmd->ssid, ssid, cmd->ssidLen);
+	//	memcpy_P(cmd->ssid, ssid, cmd->ssidLen);
+	memcpy(cmd->ssid, ssid, cmd->ssidLen);
 	memcpy(cmd->keyData, wpa_psk_key, ZG_MAX_PMK_LEN);
 
 	return;
@@ -565,7 +590,8 @@ void zg_drv_process()
 
 		cmd->ssidLen = ssid_len;
 		memset(cmd->ssid, 0, 32);
-		memcpy_P(cmd->ssid, ssid, ssid_len);
+		//		memcpy_P(cmd->ssid, ssid, ssid_len);
+		memcpy(cmd->ssid, ssid, ssid_len);
 
 		// units of 100 milliseconds
 		cmd->sleepDuration = 0;

@@ -38,7 +38,8 @@
 
 extern "C" {
 	#include "config.h"
-	#include "spi.h"
+//	#include "spi.h"
+	#include "maple-spi.h"
 	extern unsigned char webclient_get(char *host, unsigned int port, char *file);
 }
 

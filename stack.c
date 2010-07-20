@@ -43,7 +43,8 @@
 #include "witypes.h"
 #include "config.h"
 #include "g2100.h"
-#include "spi.h"
+//#include "spi.h"
+#include "maple-spi.h"
 
 #include <string.h>
 #define BUF ((struct uip_eth_hdr *)&uip_buf[0])

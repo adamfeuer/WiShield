@@ -34,11 +34,13 @@
  *****************************************************************************/
 
 extern "C" {
+  #include "libmaple.h"
   #include "witypes.h"
   #include "global-conf.h"
   #include "network.h"
   #include "g2100.h"
-  #include "spi.h"
+//  #include "spi.h"
+  #include "maple-spi.h"
   void stack_init(void);
   void stack_process(void);
 }
@@ -51,7 +53,7 @@ void WiShield::init()
 	zg_init();
 
 #ifdef USE_DIG0_INTR
-	attachInterrupt(0, zg_isr, LOW);
+	attachInterrupt(0, zg_isr, FALLING);
 #endif
 
 #ifdef USE_DIG8_INTR

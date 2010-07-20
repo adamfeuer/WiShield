@@ -42,7 +42,9 @@
 #define USE_DIG0_INTR		// use digital pin 0
 //#define USE_DIG8_INTR		// use digital pin 8
 
+/* 
 
+// Maple: we will define these
 #ifdef USE_DIG0_INTR
 #define ZG2100_ISR_DISABLE()	(EIMSK &= ~(0x01))
 #define ZG2100_ISR_ENABLE()		(EIMSK |= 0x01)
@@ -50,6 +52,7 @@
 #define ZG2100_ISR_SET(X)		(EIMSK = X)
 #endif
 
+// Maple: we will define these
 #ifdef USE_DIG8_INTR
 #define ZG2100_ISR_DISABLE()	(PCMSK0 &= ~(0x01))
 #define ZG2100_ISR_ENABLE()		(PCMSK0 |= 0x01)
@@ -67,9 +70,13 @@
 #define BIT6							0x40
 #define BIT7							0x80
 
+/* Maple: only pin D0 is supported for now
 #ifdef USE_DIG8_INTR
 #define ZG2100_INTR						BIT0
 #endif
+*/
+
+/* Maple: we will define these
 
 #define SPI0_SS_BIT						BIT2
 #define SPI0_SS_DDR						DDRB
@@ -112,40 +119,54 @@
 										SPSR  = 0x01
 #endif
 
+*/
+
+
 //ZG2100 SPI HAL
+
+/*
+
+// Maple: we will define these functions
 #define ZG2100_SpiInit					SPI0_Init
 #define ZG2100_SpiSendData				SPI0_SendByte
 #define ZG2100_SpiRecvData				SPI0_RxData
 
-
+// Maple: pin 10
 #define ZG2100_CS_BIT					BIT2
 #define ZG2100_CS_DDR					DDRB
 #define ZG2100_CS_PORT					PORTB
 
-#define ZG2100_CSInit()					(ZG2100_CS_DDR |= ZG2100_CS_BIT)
-#define ZG2100_CSon()					(ZG2100_CS_PORT |= ZG2100_CS_BIT)
-#define ZG2100_CSoff()					(ZG2100_CS_PORT &= ~ZG2100_CS_BIT)
+// Maple: we will define these functions
+define ZG2100_CSInit()					(ZG2100_CS_DDR |= ZG2100_CS_BIT)
+define ZG2100_CSon()					(ZG2100_CS_PORT |= ZG2100_CS_BIT)
+define ZG2100_CSoff()					(ZG2100_CS_PORT &= ~ZG2100_CS_BIT)
 
+// Maple: Pin 8
 #define LEDConn_BIT					BIT1
 #define LEDConn_DDR					DDRB
 #define LEDConn_PORT				PORTB
 
+// Maple: Pin 15
 #define LED0_BIT					BIT0
 #define LED0_DDR					DDRC
 #define LED0_PORT					PORTC
 
+// Maple: Pin 16
 #define LED1_BIT					BIT1
 #define LED1_DDR					DDRC
 #define LED1_PORT					PORTC
 
+// Maple: Pin 17
 #define LED2_BIT					BIT2
 #define LED2_DDR					DDRC
 #define LED2_PORT					PORTC
 
+// Maple: Pin 18
 #define LED3_BIT					BIT3
 #define LED3_DDR					DDRC
 #define LED3_PORT					PORTC
 
+// Maple: we will define these
 #define LED_Init()    (DDRC |= LED0_BIT | LED1_BIT | LED2_BIT | LED3_BIT)
 
 #define LEDConn_on()	(LEDConn_PORT |= LEDConn_BIT)
@@ -163,5 +184,7 @@
 #define LED0_toggle()	((LED0_PORT & LED0_BIT)?(LED0_PORT &= ~LED0_BIT):(LED0_PORT |= LED0_BIT))
 #define LED1_toggle()	((LED0_PORT & LED1_BIT)?(LED0_PORT &= ~LED1_BIT):(LED0_PORT |= LED1_BIT))
 #define LED3_toggle()	((LED0_PORT & LED3_BIT)?(LED0_PORT &= ~LED3_BIT):(LED0_PORT |= LED3_BIT))
+
+*/
 
 #endif /* SPI_H_ */

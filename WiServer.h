@@ -41,6 +41,7 @@
 
 extern "C" {
 	#include "witypes.h"
+	#include "util.h"
 	#include "server.h"
 	#include "config.h"
 	#include "uip.h"

@@ -39,13 +39,15 @@
 #include "WiServer.h"
 
 extern "C" {
+    #include "libmaple.h"
     #include "g2100.h"
-	#include "spi.h"
-	#include "uip.h"
+//	#include "spi.h"
+    #include "uip.h"
     #include "server.h"
-	#include "global-conf.h"
-	void stack_init(void);
-	void stack_process(void);
+    #include "global-conf.h"
+    #include "maple-spi.h"
+    void stack_init(void);
+    void stack_process(void);
 }
 
 #ifdef APP_WISERVER
