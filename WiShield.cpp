@@ -50,6 +50,19 @@ extern "C" {
 
 void WiShield::init()
 {
+        LEDConn_on();
+        delay(500);
+        LEDConn_off();
+        delay(500);
+        LEDConn_on();
+        delay(500);
+        LEDConn_off();
+        delay(500);
+        LEDConn_on();
+        delay(500);
+        LEDConn_off();
+        delay(500);
+
 	zg_init();
 
 #ifdef USE_DIG0_INTR

@@ -36,6 +36,10 @@
 #include "util.h"
 #include "spi.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 // Uncomment one line below to
 // specify which Arduino pin
 // to use as WiShield interrupt
@@ -106,7 +110,7 @@ void zg2100_isr_enable(uint8 channel);
 #define LED1_PIN                                16
 #define LED2_PIN                                17
 #define LED3_PIN                                18
-#define LED_CONN_PIN                            8
+#define LED_CONN_PIN                            9
 
 extern int led0_bit;
 extern int led1_bit;
@@ -114,6 +118,31 @@ extern int led2_bit;
 extern int led3_bit;
 extern int led_conn_bit;
 
+#define LED_ON(pin, bit)                        digitalWrite(pin, 1);
+#define LED_OFF(pin, bit)                       digitalWrite(pin, 0);
+  /*
+#define LED_ON(pin, bit)                        *bit = 1; digitalWrite(pin, *bit);
+#define LED_OFF(pin, bit)                       *bit = 0; digitalWrite(pin, *bit);
+  */
+#define LED_TOGGLE(pin, bit)                    digitalWrite(pin, bit); *bit ^= 1;
+
+#define LEDConn_on()                            LED_ON(LED_CONN_PIN, &led_conn_bit)
+#define LED0_on()                               LED_ON(LED0_PIN, &led0_bit)
+#define LED1_on()                               LED_ON(LED1_PIN, &led1_bit)
+#define LED2_on()                               LED_ON(LED2_PIN, &led2_bit)
+#define LED3_on()                               LED_ON(LED3_PIN, &led3_bit)
+
+#define LEDConn_off()                           LED_OFF(LED_CONN_PIN, &led_conn_bit)
+#define LED0_off()                              LED_OFF(LED0_PIN, &led0_bit)
+#define LED1_off()                              LED_OFF(LED1_PIN, &led1_bit)
+#define LED2_off()                              LED_OFF(LED2_PIN, &led2_bit)
+#define LED3_off()                              LED_OFF(LED3_PIN, &led3_bit)
+
+#define LED0_toggle()                           LED_TOGGLE(LED0_PIN, &led0_bit)
+#define LED1_toggle()                           LED_TOGGLE(LED1_PIN, &led1_bit)
+#define LED3_toggle()                           LED_TOGGLE(LED3_PIN, &led3_bit)
+
+/*
 #define LEDConn_on()                            led_on(LED_CONN_PIN, led_conn_bit)
 #define LED0_on()                               led_on(LED0_PIN, led0_bit)
 #define LED1_on()                               led_on(LED1_PIN, led1_bit)
@@ -129,5 +158,10 @@ extern int led_conn_bit;
 #define LED0_toggle()                           led_toggle(LED0_PIN, led0_bit)
 #define LED1_toggle()                           led_toggle(LED1_PIN, led1_bit)
 #define LED3_toggle()                           led_toggle(LED3_PIN, led3_bit)
+*/
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif /* MAPLE_SPI_H_ */
