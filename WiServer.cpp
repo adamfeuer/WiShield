@@ -90,14 +90,14 @@ void Server::init(pageServingFunction function) {
 	zg_init();
 
 #ifdef USE_DIG0_INTR
-	attachInterrupt(0, zg_isr, LOW);
+	attachInterrupt(D0, zg_isr, HIGH);
 #endif
 
 #ifdef USE_DIG8_INTR
-	// set digital pin 8 on Arduino
+	// set digital pin 8 on Maple
 	// as ZG interrupt pin
-	PCICR |= (1<<PCIE0);
-	PCMSK0 |= (1<<PCINT0);
+        pinMode(D1, INPUT);
+        attachInterrupt(D8, zg_isr, HIGH);
 #endif
 
 	while(zg_get_conn_state() != 1) {

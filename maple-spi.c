@@ -35,7 +35,11 @@
 #include "maple-spi.h"
 
 void enable_interrupt(uint8 channel) {
-    /* Turn on the associated interrupt */
+
+    // copied from exti_attach_interrupt() in libmaple/exti.c
+    // TODO: refactor exti_attach_interrupt() to separate this into a separate function and eliminate duplication
+
+    /* Configure the enable interrupt bits for the NVIC  */
     switch (channel) {
     case EXTI0:
     case EXTI1:
@@ -44,27 +48,35 @@ void enable_interrupt(uint8 channel) {
     case EXTI4:
         REG_SET(NVIC_ISER0, BIT(channel + 6));
         break;
+
+    /* EXTI5-9 map to the same isr */
     case EXTI5:
     case EXTI6:
     case EXTI7:
     case EXTI8:
     case EXTI9:
-         REG_SET(NVIC_ISER0, BIT(23));
+        REG_SET(NVIC_ISER0, BIT(23));
         break;
+
+    /* EXTI10-15 map to the same isr */
     case EXTI10:
     case EXTI11:
     case EXTI12:
     case EXTI13:
     case EXTI14:
     case EXTI15:
-         REG_SET(NVIC_ISER1, BIT(8));
+        REG_SET(NVIC_ISER1, BIT(8));
+        break;
     }
+
 }
 
 void zg2100_isr_enable(uint8 channel) {
-  enable_interrupt(channel);
-  nvic_enable_interrupt(NVIC_INT_USBHP);
-  nvic_enable_interrupt(NVIC_INT_USBLP);
+   enable_interrupt(channel);
+
+   // enable USB interrupts so the bootloader will continue to work
+   nvic_enable_interrupt(NVIC_INT_USBHP);
+   nvic_enable_interrupt(NVIC_INT_USBLP);
 }
 
 /*
@@ -116,6 +128,11 @@ int led2_bit = 0;
 int led3_bit = 0;
 int led_conn_bit = 0;
 
+/*
+
+// Maple: unused for now. 
+// TODO: remove once we demonstrate the macros in maple-spi.h work correctly
+
 void LED_Init() {
   pinMode(LED0_PIN, OUTPUT);
   pinMode(LED1_PIN, OUTPUT);
@@ -139,3 +156,4 @@ void toggle_led(uint8 pin, int* bit) {
   *bit ^= 1;
 }
 
+*/

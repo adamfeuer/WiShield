@@ -126,6 +126,8 @@ extern int led_conn_bit;
   */
 #define LED_TOGGLE(pin, bit)                    digitalWrite(pin, bit); *bit ^= 1;
 
+#define LED_Init()                              pinMode(LED0_PIN, OUTPUT); pinMode(LED1_PIN, OUTPUT); pinMode(LED2_PIN, OUTPUT); pinMode(LED3_PIN, OUTPUT); pinMode(LED_CONN_PIN, OUTPUT);
+
 #define LEDConn_on()                            LED_ON(LED_CONN_PIN, &led_conn_bit)
 #define LED0_on()                               LED_ON(LED0_PIN, &led0_bit)
 #define LED1_on()                               LED_ON(LED1_PIN, &led1_bit)

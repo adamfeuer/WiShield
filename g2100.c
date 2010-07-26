@@ -43,8 +43,8 @@
 // for Maple
 #include "nvic.h"
 #include "exti.h"
-//#include "wirish.h"
 #include "maple-spi.h"
+#include "maple-util.h"
 
 static U8 mac[6];
 static U8 zg_conn_status;
@@ -64,6 +64,18 @@ static U8 wpa_psk_key[32];
 void zg_init()
 {
 	U8 clr;
+
+        // Maple: blink LEDConn once to show we get here.
+        pinMode(9, OUTPUT);     
+        digitalWrite(9, 0x1);   // set the LED on
+        delay(1000);                  // wait for a second
+        digitalWrite(9, 0x0);    // set the LED off
+        delay(1000);                  // wait for a second
+
+        // Maple: start serial console debugging
+        /* Send a message out USART2  */
+        initSerial(USART2, 115200);
+        //printlnSerial("In zg_init()");
 
 	ZG2100_SpiInit();
 	// clr = SPSR;
@@ -258,26 +270,18 @@ void zg_process_isr()
 		}
 	} while (intr_state);
 
-	/* Maple: only support INT D2 for now
 
+	// Maple: both D0 and D8 interrupts trigger on rising
 #ifdef USE_DIG8_INTR
-	// PCINT0 supports only edge triggered INT
-	if (PORTB & 0x01) {
-		intr_occured = 0;
-		ZG2100_ISR_ENABLE();
-	}
-	else {
-		intr_occured = 1;
-	}
+
+	intr_occured = 0;
+        ZG2100_ISR_ENABLE();
+
 #else
 	intr_occured = 0;
 	ZG2100_ISR_ENABLE();
 #endif
 
-	*/
-
-	intr_occured = 0;
-        ZG2100_ISR_ENABLE();
 }
 
 
