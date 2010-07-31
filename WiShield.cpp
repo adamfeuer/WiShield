@@ -41,12 +41,15 @@ extern "C" {
   #include "g2100.h"
 //  #include "spi.h"
   #include "maple-spi.h"
+  #include "maple-util.h"
   void stack_init(void);
   void stack_process(void);
 }
 
 #include "WProgram.h"
 #include "WiShield.h"
+
+#include "usb_serial.h"
 
 void WiShield::init()
 {
@@ -63,6 +66,8 @@ void WiShield::init()
         LEDConn_off();
         delay(500);
 
+        serialUsbPrintlnWaitForInput("In WiShield init()");
+
 	zg_init();
 
 #ifdef USE_DIG0_INTR
@@ -70,10 +75,7 @@ void WiShield::init()
 #endif
 
 #ifdef USE_DIG8_INTR
-	// set digital pin 8 on Arduino
-	// as ZG interrupt pin
-	PCICR |= (1<<PCIE0);
-	PCMSK0 |= (1<<PCINT0);
+	attachInterrupt(8, zg_isr, FALLING);
 #endif
 
 	while(zg_get_conn_state() != 1) {
@@ -85,15 +87,15 @@ void WiShield::init()
 
 void WiShield::run()
 {
-	stack_process();
-	zg_drv_process();
+  // stack_process();
+  // zg_drv_process();
 }
 
 #if defined USE_DIG8_INTR && !defined APP_WISERVER
 // PCINT0 interrupt vector
 ISR(PCINT0_vect)
 {
-	zg_isr();
+  //zg_isr();
 }
 
 #endif

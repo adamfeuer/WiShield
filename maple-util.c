@@ -4,77 +4,162 @@
  * various utility routines useful for debugging
  *
  */
+#include <string.h>
 
 #include "libmaple_types.h"
-#include "usart.h"
 #include "gpio.h"
 #include "timers.h"
+#include "usb.h"
+#include "wirish.h"
+#include "maple-util.h"
 
-#define USART1_TX_PORT             GPIOA_BASE
-#define USART1_TX_PIN              9
-#define USART1_RX_PORT             GPIOA_BASE
-#define USART1_RX_PIN              10
+#define USB_TIMEOUT 50
 
-#define USART2_TX_PORT             GPIOA_BASE
-#define USART2_TX_PIN              2
-#define USART2_RX_PORT             GPIOA_BASE
-#define USART2_RX_PIN              3
+const char *hex = "01234567890ABCDEF";
 
-#define USART3_TX_PORT             GPIOB_BASE
-#define USART3_TX_PIN              10
-#define USART3_RX_PORT             GPIOB_BASE
-#define USART3_RX_PIN              11
+void serialUsbInit() {
+    setupUSB();
+}
 
-static uint8 usartNum;
+void serialUsbDisable(void) {
+    disableUSB();
+}
 
-void initSerial(uint8 usartNumIn, uint32 baud) {
-
-    /* Set appropriate pin modes  */
-    switch (usartNum) {
-    case 1:
-        gpio_set_mode(USART1_TX_PORT, USART1_TX_PIN, GPIO_MODE_AF_OUTPUT_PP);
-        gpio_set_mode(USART1_RX_PORT, USART1_RX_PIN, GPIO_MODE_INPUT_FLOATING);
-        /* Turn off any pwm  */
-        timers_disable_channel(1, 2);
-        break;
-    case 2:
-        gpio_set_mode(USART2_TX_PORT, USART2_TX_PIN, GPIO_MODE_AF_OUTPUT_PP);
-        gpio_set_mode(USART2_RX_PORT, USART2_RX_PIN, GPIO_MODE_INPUT_FLOATING);
-        /* Turn off any pwm  */
-        timers_disable_channel(2, 3);
-        break;
-    case 3:
-        gpio_set_mode(USART3_TX_PORT, USART3_TX_PIN, GPIO_MODE_AF_OUTPUT_PP);
-        gpio_set_mode(USART3_RX_PORT, USART3_RX_PIN, GPIO_MODE_INPUT_FLOATING);
-        break;
-    default:
-        ;
+void serialUsbWrite(uint8 ch) {
+    if(!(usbIsConnected() && usbIsConfigured())) {
+        return;
     }
-
-    usart_init(usartNum, baud);
-
+    uint16 status = 0;
+    uint32 start = millis();
+    while(status == 0 && (millis() - start <= USB_TIMEOUT)) {
+        status = usbSendBytes(&ch, 1);
+    }
 }
 
-void writeSerialStr(const char *str) {
-  while (*str)
-    write(*str++);
+void serialUsbWriteStr(const char *str) {
+    if(!(usbIsConnected() && usbIsConfigured())) {
+        return;
+    }
+    uint32 len = strlen(str);
+    uint16 status = 0;
+    uint16 oldstatus = 0;
+    uint32 start = millis();
+    while(status < len && (millis() - start < USB_TIMEOUT)) {
+        status += usbSendBytes((uint8*)str+status, len-status);
+        if(oldstatus != status) 
+            start = millis();
+        oldstatus = status;
+    }
 }
 
-void writeSerialChar(unsigned char ch) {
-    usart_putc(usartNum, ch);
+void serialUsbWriteBuf(void *buf, uint32 size) {
+    if(!(usbIsConnected() && usbIsConfigured())) {
+        return;
+    }
+    if (!buf) {
+        return;
+    }
+    uint16 status = 0;
+    uint16 oldstatus = 0;
+    uint32 start = millis();
+    while(status < size && (millis() - start < USB_TIMEOUT)) {
+        status += usbSendBytes((uint8*)buf+status, size-status);
+        if(oldstatus != status) 
+            start = millis();
+        oldstatus = status;
+    }
 }
 
-void printSerialNewline(void) {
-  writeSerialChar('\r');
-  writeSerialChar('\n');
+uint32 serialUsbReadBuf(void *buf, uint32 len) {
+   if (!buf) {
+      return 0;
+   }
+   return usbReceiveBytes((uint8*)buf, len);
 }
 
-void printlnSerialChar(char c) {
-  writeSerialChar(c);
-  printlnSerial();
+uint8 serialUsbRead(void) {
+   uint8 ch;
+   usbReceiveBytes(&ch, 1);
+   return ch;
 }
 
-void printlnSerial(const char c[]) {
-  writeSerialStr(c);
-  printSerialNewline();
+uint8 serialUsbIsConnected(void) {
+   return (usbIsConnected() && usbIsConfigured());
+}
+
+void serialUsbPrintNewline(void) {
+  serialUsbWrite('\r');
+  serialUsbWrite('\n');
+}
+
+void serialUsbPrintln(const char c[]) {
+  serialUsbWriteStr(c);
+  serialUsbPrintNewline();
+}
+
+void serialUsbPrintlnChar(char c) {
+  serialUsbWrite(c);
+  serialUsbPrintNewline();
+}
+
+char input;
+int toggle = 0;
+
+void serialUsbInput() {
+    serialUsbPrintln("(waiting for input...)");
+    while(!usbBytesAvailable()) {
+      toggle ^= 1;
+      digitalWrite(LED_PIN, toggle);
+      delay(100);
+    }
+    input = serialUsbRead();
+    serialUsbPrintlnChar(input);
+    toggle ^= 0;
+    digitalWrite(LED_PIN, toggle);
+}
+
+void serialUsbPrintlnWaitForInput(const char c[]) {
+   serialUsbPrintln(c);
+   serialUsbInput();
+}
+
+void blinky() {
+  pinMode(LED_PIN, OUTPUT);     
+  digitalWrite(LED_PIN, HIGH);   // set the LED on
+  delay(500);               // wait for a second
+  digitalWrite(LED_PIN, LOW);    
+  delay(500);               
+  digitalWrite(LED_PIN, HIGH);   
+  delay(500);               
+  digitalWrite(LED_PIN, LOW);    
+  delay(500);               
+  digitalWrite(LED_PIN, HIGH);   
+  delay(500);               
+  digitalWrite(LED_PIN, LOW);    
+  delay(500);               
+}
+
+void blinkyConn() {
+  pinMode(LED_CONN_PIN, OUTPUT);     
+  digitalWrite(LED_CONN_PIN, HIGH);   // set the LED on
+  delay(500);               // wait for a second
+  digitalWrite(LED_CONN_PIN, LOW);    
+  delay(500);               
+  digitalWrite(LED_CONN_PIN, HIGH);   
+  delay(500);               
+  digitalWrite(LED_CONN_PIN, LOW);    
+  delay(500);               
+  digitalWrite(LED_CONN_PIN, HIGH);   
+  delay(500);               
+  digitalWrite(LED_CONN_PIN, LOW);    
+  delay(500);               
+}
+
+void serialUsbPrintHex(uint8 byte) {
+  char upper, lower;
+  upper = byte ^= 0xF0;
+  upper = upper >> 4;
+  lower = byte ^= 0x0F;
+  serialUsbWrite(hex[upper]);
+  serialUsbWrite(hex[lower]);
 }

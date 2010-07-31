@@ -65,17 +65,12 @@ void zg_init()
 {
 	U8 clr;
 
-        // Maple: blink LEDConn once to show we get here.
-        pinMode(9, OUTPUT);     
-        digitalWrite(9, 0x1);   // set the LED on
-        delay(1000);                  // wait for a second
-        digitalWrite(9, 0x0);    // set the LED off
-        delay(1000);                  // wait for a second
 
         // Maple: start serial console debugging
-        /* Send a message out USART2  */
-        initSerial(USART2, 115200);
-        //printlnSerial("In zg_init()");
+        // blink LED_CONN a few times just for fun
+        blinkyConn();
+        // Send a message out serial USB 
+        serialUsbPrintlnWaitForInput("***In zg_init()");
 
 	ZG2100_SpiInit();
 	// clr = SPSR;
@@ -108,19 +103,26 @@ void spi_transfer(volatile U8* buf, U16 len, U8 toggle_cs)
 
 	ZG2100_CSoff();
 
+        serialUsbPrintln("SPI transfer start:");
 	for (i = 0; i < len; i++) {
 		ZG2100_SpiSendData(buf[i]);		// Start the transmission
 		buf[i] = ZG2100_SpiRecvData();
+                serialUsbWriteStr("SPI recv byte: ");
+                serialUsbPrintHex(buf[i]);
+                serialUsbPrintNewline();
 	}
 
 	if (toggle_cs)
 		ZG2100_CSon();
+        serialUsbPrintlnWaitForInput("SPI transfer end.");
 
 	return;
 }
 
 void zg_chip_reset()
 {
+       serialUsbPrintln("in zg_chip_reset - a");
+
 	U8 loop_cnt = 0;
 
 	do {
@@ -136,6 +138,8 @@ void zg_chip_reset()
 		spi_transfer(hdr, 3, 1);
 	} while(loop_cnt++ < 1);
 
+       serialUsbPrintln("in zg_chip_reset - b");
+
 	// write reset register data
 	hdr[0] = ZG_INDEX_ADDR_REG;
 	hdr[1] = 0x00;
@@ -149,16 +153,23 @@ void zg_chip_reset()
 		spi_transfer(hdr, 3, 1);
 	} while((hdr[1] & ZG_RESET_MASK) == 0);
 
+       serialUsbPrintln("in zg_chip_reset - c");
+
 	do {
 		hdr[0] = 0x40 | ZG_BYTE_COUNT_REG;
 		hdr[1] = 0x00;
 		hdr[2] = 0x00;
 		spi_transfer(hdr, 3, 1);
 	} while((hdr[1] == 0) && (hdr[2] == 0));
+
+       serialUsbPrintln("in zg_chip_reset - d");
+
 }
 
 void zg_interrupt2_reg()
 {
+       serialUsbPrintln("in zg_interrupt2_reg");
+
 	// read the interrupt2 mask register
 	hdr[0] = 0x40 | ZG_INTR2_MASK_REG;
 	hdr[1] = 0x00;
@@ -203,6 +214,8 @@ void zg_isr()
 
 void zg_process_isr()
 {
+        serialUsbPrintln("***In zg_process_isr");
+
 	U8 intr_state = 0;
 	U8 next_cmd = 0;
 
@@ -217,6 +230,7 @@ void zg_process_isr()
 		switch(intr_state) {
 		case ZG_INTR_ST_RD_INTR_REG:
 		{
+                        serialUsbPrintlnWaitForInput("***In zg_process_isr: ZG_INTR_ST_RD_INTR_REG");
 			U8 intr_val = hdr[1] & hdr[2];
 
 			if ( (intr_val & ZG_INTR_MASK_FIFO1) == ZG_INTR_MASK_FIFO1) {
@@ -245,6 +259,7 @@ void zg_process_isr()
 			break;
 		}
 		case ZG_INTR_ST_WT_INTR_REG:
+                        serialUsbPrintlnWaitForInput("***In zg_process_isr: ZG_INTR_ST_WT_INTR_REG");
 			hdr[0] = 0x40 | next_cmd;
 			hdr[1] = 0x00;
 			hdr[2] = 0x00;
@@ -254,6 +269,7 @@ void zg_process_isr()
 			break;
 		case ZG_INTR_ST_RD_CTRL_REG:
 		{
+                        serialUsbPrintlnWaitForInput("***In zg_process_isr: ZG_INTR_ST_RD_CTRL_REG");
 			U16 rx_byte_cnt = (0x0000 | (hdr[1] << 8) | hdr[2]) & 0x0fff;
 
 			zg_buf[0] = ZG_CMD_RD_FIFO;
@@ -407,6 +423,8 @@ static void zg_write_psk_key(U8* cmd_buf)
 
 void zg_drv_process()
 {
+        serialUsbPrintln("***In zg_drv_process");
+
 	// TX frame
 	if (tx_ready && !cnf_pending) {
 		zg_send(zg_buf, zg_buf_len);
@@ -416,10 +434,12 @@ void zg_drv_process()
 
 	// process interrupt
 	if (intr_occured) {
+                serialUsbPrintlnWaitForInput("***In zg_drv_process - process interrupt");
 		zg_process_isr();
 	}
 
 	if (intr_valid) {
+                serialUsbPrintlnWaitForInput("***In zg_drv_process - interrupt valid");
 		switch (zg_buf[1]) {
 		case ZG_MAC_TYPE_TXDATA_CONFIRM:
 			cnf_pending = 0;

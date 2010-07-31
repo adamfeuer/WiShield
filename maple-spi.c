@@ -33,6 +33,7 @@
 #include "exti.h"
 #include "wirish.h"
 #include "maple-spi.h"
+#include "maple-util.h"
 
 void enable_interrupt(uint8 channel) {
 
@@ -102,22 +103,22 @@ static const uint32 prescaleFactors[MAPLE_MAX_SPI_FREQS] = {
 
 void SPI1_Init() {
   MapleSPIFrequency freq;
-  uint32 spi_num, endianness, prescale;
+  uint32 spi_num, endian, prescale;
+
+  serialUsbPrintlnWaitForInput("***In SPI1_Init()");
 
   // set up CS pin
   pinMode(ZG2100_CS_PIN, OUTPUT);
   digitalWrite(ZG2100_CS_PIN, HIGH);
 
-  // turn off PWM shared pins
-  timers_disable_channel(3, 2);
-  timers_disable_channel(3, 1);
-
   // init SPI
   spi_num = 1;
-  endianness = LSBFIRST;
+  endian = LSBFIRST;
   freq = MAPLE_SPI_4_5MHZ;
   prescale = prescaleFactors[freq]; // only valid for SPI1
-  spi_init(spi_num, prescale, endianness, 0);
+  spi_init(spi_num, prescale, endian, 0);
+
+  serialUsbPrintlnWaitForInput("*** Done with spi_init.");
 }
 
 // ZG2100 SPI HAL
@@ -128,32 +129,3 @@ int led2_bit = 0;
 int led3_bit = 0;
 int led_conn_bit = 0;
 
-/*
-
-// Maple: unused for now. 
-// TODO: remove once we demonstrate the macros in maple-spi.h work correctly
-
-void LED_Init() {
-  pinMode(LED0_PIN, OUTPUT);
-  pinMode(LED1_PIN, OUTPUT);
-  pinMode(LED2_PIN, OUTPUT);
-  pinMode(LED3_PIN, OUTPUT);
-  pinMode(LED_CONN_PIN, OUTPUT);
-}
-
-void led_on(uint8 pin, int* bit) {
-  *bit = 1;
-  digitalWrite(pin, *bit);
-}
-
-void led_off(uint8 pin, int* bit) {
-  *bit = 0;
-  digitalWrite(pin, *bit);
-}
-
-void toggle_led(uint8 pin, int* bit) {
-  digitalWrite(pin, *bit);
-  *bit ^= 1;
-}
-
-*/

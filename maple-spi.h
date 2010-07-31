@@ -118,12 +118,13 @@ extern int led2_bit;
 extern int led3_bit;
 extern int led_conn_bit;
 
+  /*
 #define LED_ON(pin, bit)                        digitalWrite(pin, 1);
 #define LED_OFF(pin, bit)                       digitalWrite(pin, 0);
-  /*
+  */
+
 #define LED_ON(pin, bit)                        *bit = 1; digitalWrite(pin, *bit);
 #define LED_OFF(pin, bit)                       *bit = 0; digitalWrite(pin, *bit);
-  */
 #define LED_TOGGLE(pin, bit)                    digitalWrite(pin, bit); *bit ^= 1;
 
 #define LED_Init()                              pinMode(LED0_PIN, OUTPUT); pinMode(LED1_PIN, OUTPUT); pinMode(LED2_PIN, OUTPUT); pinMode(LED3_PIN, OUTPUT); pinMode(LED_CONN_PIN, OUTPUT);
@@ -143,24 +144,6 @@ extern int led_conn_bit;
 #define LED0_toggle()                           LED_TOGGLE(LED0_PIN, &led0_bit)
 #define LED1_toggle()                           LED_TOGGLE(LED1_PIN, &led1_bit)
 #define LED3_toggle()                           LED_TOGGLE(LED3_PIN, &led3_bit)
-
-/*
-#define LEDConn_on()                            led_on(LED_CONN_PIN, led_conn_bit)
-#define LED0_on()                               led_on(LED0_PIN, led0_bit)
-#define LED1_on()                               led_on(LED1_PIN, led1_bit)
-#define LED2_on()                               led_on(LED2_PIN, led2_bit)
-#define LED3_on()                               led_on(LED3_PIN, led3_bit)
-
-#define LEDConn_off()                           led_off(LED_CONN_PIN, led_conn_bit)
-#define LED0_off()                              led_off(LED0_PIN, led0_bit)
-#define LED1_off()                              led_off(LED1_PIN, led1_bit)
-#define LED2_off()                              led_off(LED2_PIN, led2_bit)
-#define LED3_off()                              led_off(LED3_PIN, led3_bit)
-
-#define LED0_toggle()                           led_toggle(LED0_PIN, led0_bit)
-#define LED1_toggle()                           led_toggle(LED1_PIN, led1_bit)
-#define LED3_toggle()                           led_toggle(LED3_PIN, led3_bit)
-*/
 
 #ifdef __cplusplus
 } // extern "C"
