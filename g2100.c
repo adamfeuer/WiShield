@@ -70,7 +70,9 @@ void zg_init()
         // blink LED_CONN a few times just for fun
         blinkyConn();
         // Send a message out serial USB 
-        serialUsbPrintlnWaitForInput("***In zg_init()");
+        //serialUsbPrintlnWaitForInput(" ");
+        //serialUsbPrintlnWaitForInput("***In zg_init()");
+        serialUsbPrintln("***In zg_init()");
 
 	ZG2100_SpiInit();
 	// clr = SPSR;
@@ -105,16 +107,20 @@ void spi_transfer(volatile U8* buf, U16 len, U8 toggle_cs)
 
         serialUsbPrintln("SPI transfer start:");
 	for (i = 0; i < len; i++) {
+                serialUsbWriteStr("tx byte: ");
+                serialUsbPrintHex(buf[i]);
+                serialUsbWriteStr("   ");
 		ZG2100_SpiSendData(buf[i]);		// Start the transmission
 		buf[i] = ZG2100_SpiRecvData();
-                serialUsbWriteStr("SPI recv byte: ");
+                serialUsbWriteStr("rx byte: ");
                 serialUsbPrintHex(buf[i]);
                 serialUsbPrintNewline();
 	}
 
 	if (toggle_cs)
 		ZG2100_CSon();
-        serialUsbPrintlnWaitForInput("SPI transfer end.");
+        //serialUsbPrintlnWaitForInput("SPI transfer end.");
+        serialUsbPrintln("SPI transfer end.");
 
 	return;
 }
@@ -138,13 +144,17 @@ void zg_chip_reset()
 		spi_transfer(hdr, 3, 1);
 	} while(loop_cnt++ < 1);
 
-       serialUsbPrintln("in zg_chip_reset - b");
+	// serialUsbPrintlnWaitForInput("in zg_chip_reset - b");
+        serialUsbPrintln("in zg_chip_reset - b");
 
 	// write reset register data
 	hdr[0] = ZG_INDEX_ADDR_REG;
 	hdr[1] = 0x00;
 	hdr[2] = ZG_RESET_STATUS_REG;
 	spi_transfer(hdr, 3, 1);
+
+        //serialUsbPrintlnWaitForInput("in zg_chip_reset - c");
+        serialUsbPrintln("in zg_chip_reset - c");
 
 	do {
 		hdr[0] = 0x40 | ZG_INDEX_DATA_REG;
@@ -153,7 +163,8 @@ void zg_chip_reset()
 		spi_transfer(hdr, 3, 1);
 	} while((hdr[1] & ZG_RESET_MASK) == 0);
 
-       serialUsbPrintln("in zg_chip_reset - c");
+        //serialUsbPrintlnWaitForInput("in zg_chip_reset - d");
+        serialUsbPrintln("in zg_chip_reset - d");
 
 	do {
 		hdr[0] = 0x40 | ZG_BYTE_COUNT_REG;
@@ -162,7 +173,8 @@ void zg_chip_reset()
 		spi_transfer(hdr, 3, 1);
 	} while((hdr[1] == 0) && (hdr[2] == 0));
 
-       serialUsbPrintln("in zg_chip_reset - d");
+	//serialUsbPrintlnWaitForInput("in zg_chip_reset - done");
+	serialUsbPrintln("in zg_chip_reset - done");
 
 }
 
@@ -185,11 +197,15 @@ void zg_interrupt2_reg()
 	hdr[4] = 0;
 	spi_transfer(hdr, 5, 1);
 
+	//serialUsbPrintlnWaitForInput("in zg_interrupt2_reg - done");
+	serialUsbPrintln("in zg_interrupt2_reg - done");
 	return;
 }
 
 void zg_interrupt_reg(U8 mask, U8 state)
 {
+	serialUsbPrintln("in zg_interrupt_reg");
+
 	// read the interrupt register
 	hdr[0] = 0x40 | ZG_INTR_MASK_REG;
 	hdr[1] = 0x00;
@@ -203,12 +219,16 @@ void zg_interrupt_reg(U8 mask, U8 state)
 	hdr[1] = mask;
 	spi_transfer(hdr, 3, 1);
 
+	//serialUsbPrintlnWaitForInput("in zg_interrupt_reg - done");
+	serialUsbPrintln("in zg_interrupt_reg - done");
+
 	return;
 }
 
 void zg_isr()
 {
 	ZG2100_ISR_DISABLE();
+	serialUsbPrintlnWaitForInput("in zg_isr");
 	intr_occured = 1;
 }
 
@@ -287,16 +307,9 @@ void zg_process_isr()
 	} while (intr_state);
 
 
-	// Maple: both D0 and D8 interrupts trigger on rising
-#ifdef USE_DIG8_INTR
-
-	intr_occured = 0;
-        ZG2100_ISR_ENABLE();
-
-#else
+	// Maple: both D2/EXTI0 and D8/EXTI10 interrupts trigger on falling
 	intr_occured = 0;
 	ZG2100_ISR_ENABLE();
-#endif
 
 }
 
@@ -423,7 +436,7 @@ static void zg_write_psk_key(U8* cmd_buf)
 
 void zg_drv_process()
 {
-        serialUsbPrintln("***In zg_drv_process");
+        serialUsbPrintln("***In zg_drv_process:");
 
 	// TX frame
 	if (tx_ready && !cnf_pending) {
@@ -514,9 +527,11 @@ void zg_drv_process()
 
 	switch (zg_drv_state) {
 	case DRV_STATE_INIT:
+                serialUsbPrintlnWaitForInput(" DRV_STATE_INIT");
 		zg_drv_state = DRV_STATE_GET_MAC;
 		break;
 	case DRV_STATE_GET_MAC:
+                serialUsbPrintlnWaitForInput(" DRV_STATE_GET_MAC");
 		// get MAC address
 		zg_buf[0] = ZG_CMD_WT_FIFO_MGMT;
 		zg_buf[1] = ZG_MAC_TYPE_MGMT_REQ;
@@ -531,6 +546,7 @@ void zg_drv_process()
 		zg_drv_state = DRV_STATE_IDLE;
 		break;
 	case DRV_STATE_SETUP_SECURITY:
+                serialUsbPrintln(" DRV_STATE_SETUP_SECURITY");
 		switch (security_type) {
 		case ZG_SECURITY_TYPE_NONE:
 			zg_drv_state = DRV_STATE_ENABLE_CONN_MANAGE;
@@ -567,6 +583,7 @@ void zg_drv_process()
 		}
 		break;
 	case DRV_STATE_INSTALL_PSK:
+                serialUsbPrintln(" DRV_STATE_INSTALL_PSK");
 		// Install the PSK key on G2100
 		zg_buf[0] = ZG_CMD_WT_FIFO_MGMT;
 		zg_buf[1] = ZG_MAC_TYPE_MGMT_REQ;
@@ -580,6 +597,7 @@ void zg_drv_process()
 		zg_drv_state = DRV_STATE_IDLE;
 		break;
 	case DRV_STATE_ENABLE_CONN_MANAGE:
+                serialUsbPrintln(" DRV_STATE_ENABLE_CONN_MANAGE");
 		// enable connection manager
 		zg_buf[0] = ZG_CMD_WT_FIFO_MGMT;
 		zg_buf[1] = ZG_MAC_TYPE_MGMT_REQ;
@@ -603,6 +621,7 @@ void zg_drv_process()
 		break;
 	case DRV_STATE_START_CONN:
 	{
+                serialUsbPrintln(" DRV_STATE_START_CONN");
 		zg_connect_req_t* cmd = (zg_connect_req_t*)&zg_buf[3];
 
 		// start connection to AP
@@ -634,12 +653,14 @@ void zg_drv_process()
 		break;
 	}
 	case DRV_STATE_PROCESS_RX:
+                serialUsbPrintln(" DRV_STATE_PROCESS_RX");
 		zg_recv(zg_buf, &zg_buf_len);
 		rx_ready = 1;
 
 		zg_drv_state = DRV_STATE_IDLE;
 		break;
 	case DRV_STATE_IDLE:
+                serialUsbPrintln(" DRV_STATE_IDLE");
 		break;
 	}
 }

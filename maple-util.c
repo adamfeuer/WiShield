@@ -107,6 +107,7 @@ int toggle = 0;
 
 void serialUsbInput() {
     serialUsbPrintln("(waiting for input...)");
+    toggle = 0;
     while(!usbBytesAvailable()) {
       toggle ^= 1;
       digitalWrite(LED_PIN, toggle);
@@ -114,7 +115,7 @@ void serialUsbInput() {
     }
     input = serialUsbRead();
     serialUsbPrintlnChar(input);
-    toggle ^= 0;
+    toggle = 0;
     digitalWrite(LED_PIN, toggle);
 }
 
@@ -157,9 +158,9 @@ void blinkyConn() {
 
 void serialUsbPrintHex(uint8 byte) {
   char upper, lower;
-  upper = byte ^= 0xF0;
+  upper = byte &= 0xF0;
   upper = upper >> 4;
-  lower = byte ^= 0x0F;
+  lower = byte &= 0x0F;
   serialUsbWrite(hex[upper]);
   serialUsbWrite(hex[lower]);
 }

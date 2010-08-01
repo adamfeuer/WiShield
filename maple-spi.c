@@ -81,11 +81,11 @@ void zg2100_isr_enable(uint8 channel) {
 }
 
 /*
-#define SPI1_Init()						DDRB  |= SPI0_SS_BIT|SPI0_SCLK_BIT|SPI0_MOSI_BIT|LEDConn_BIT;\
-										DDRB  &= ~SPI0_MISO_BIT;\
-										PORTB = SPI0_SS_BIT;\
-										SPCR  = 0x50;\
-										SPSR  = 0x01
+#define SPI1_Init()  DDRB  |= SPI0_SS_BIT|SPI0_SCLK_BIT|SPI0_MOSI_BIT|LEDConn_BIT;\
+	DDRB  &= ~SPI0_MISO_BIT;\
+	PORTB = SPI0_SS_BIT;\
+	SPCR  = 0x50;\
+	SPSR  = 0x01
 */
 
 // Maple SPI
@@ -105,20 +105,24 @@ void SPI1_Init() {
   MapleSPIFrequency freq;
   uint32 spi_num, endian, prescale;
 
-  serialUsbPrintlnWaitForInput("***In SPI1_Init()");
+  //serialUsbPrintlnWaitForInput("***In SPI1_Init()");
+  serialUsbPrintln("***In SPI1_Init()");
 
   // set up CS pin
-  pinMode(ZG2100_CS_PIN, OUTPUT);
-  digitalWrite(ZG2100_CS_PIN, HIGH);
+  ZG2100_CSInit();
+  ZG2100_CSoff();
+
+  pinMode(D2, INPUT);
 
   // init SPI
   spi_num = 1;
-  endian = LSBFIRST;
+  endian = MSBFIRST;
   freq = MAPLE_SPI_4_5MHZ;
   prescale = prescaleFactors[freq]; // only valid for SPI1
   spi_init(spi_num, prescale, endian, 0);
 
-  serialUsbPrintlnWaitForInput("*** Done with spi_init.");
+  //serialUsbPrintlnWaitForInput("*** Done with spi_init.");
+  serialUsbPrintln("*** Done with spi_init.");
 }
 
 // ZG2100 SPI HAL

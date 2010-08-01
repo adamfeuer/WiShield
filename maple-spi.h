@@ -43,11 +43,11 @@ extern "C"{
 // Uncomment one line below to
 // specify which Arduino pin
 // to use as WiShield interrupt
-#define USE_DIG0_INTR		// use digital pin 0
-//#define USE_DIG8_INTR		// use digital pin 8
+#define USE_DIG0_INTR		// use digital pin D2
+//#define USE_DIG8_INTR		// use digital pin D8
 
 #ifdef USE_DIG0_INTR
-#define ZG2100_ISR_ENABLE()		zg2100_isr_enable(EXTI3)   // Maple: digital pin D0 corresponds to interrupt EXTI3
+#define ZG2100_ISR_ENABLE()		zg2100_isr_enable(EXTI0)   // Maple: digital pin D2 corresponds to interrupt EXTI0 - WiShield INTX jumper set to D2
 #endif
 
 #ifdef USE_DIG8_INTR
@@ -102,8 +102,8 @@ void zg2100_isr_enable(uint8 channel);
 
 #define ZG2100_CS_PIN                           10
 #define ZG2100_CSInit()                         pinMode(ZG2100_CS_PIN, OUTPUT)
-#define ZG2100_CSon()                           digitalWrite(ZG2100_CS_PIN, LOW)
-#define ZG2100_CSoff()                          digitalWrite(ZG2100_CS_PIN, HIGH)
+#define ZG2100_CSon()                           digitalWrite(ZG2100_CS_PIN, HIGH)
+#define ZG2100_CSoff()                          digitalWrite(ZG2100_CS_PIN, LOW)
 
 #define NUMBER_OF_ZG_LEDS                       4
 #define LED0_PIN                                15

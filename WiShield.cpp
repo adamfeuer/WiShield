@@ -53,29 +53,16 @@ extern "C" {
 
 void WiShield::init()
 {
-        LEDConn_on();
-        delay(500);
-        LEDConn_off();
-        delay(500);
-        LEDConn_on();
-        delay(500);
-        LEDConn_off();
-        delay(500);
-        LEDConn_on();
-        delay(500);
-        LEDConn_off();
-        delay(500);
-
-        serialUsbPrintlnWaitForInput("In WiShield init()");
-
 	zg_init();
 
 #ifdef USE_DIG0_INTR
-	attachInterrupt(0, zg_isr, FALLING);
+        pinMode(D2, INPUT);
+	attachInterrupt(D2, zg_isr, FALLING);
 #endif
 
 #ifdef USE_DIG8_INTR
-	attachInterrupt(8, zg_isr, FALLING);
+        pinMode(D8, INPUT);
+	attachInterrupt(D8, zg_isr, FALLING);
 #endif
 
 	while(zg_get_conn_state() != 1) {
@@ -87,18 +74,9 @@ void WiShield::init()
 
 void WiShield::run()
 {
-  // stack_process();
-  // zg_drv_process();
+  stack_process();
+  zg_drv_process();
 }
-
-#if defined USE_DIG8_INTR && !defined APP_WISERVER
-// PCINT0 interrupt vector
-ISR(PCINT0_vect)
-{
-  //zg_isr();
-}
-
-#endif
 
 WiShield WiFi;
 

@@ -90,7 +90,7 @@ void Server::init(pageServingFunction function) {
 	zg_init();
 
 #ifdef USE_DIG0_INTR
-	attachInterrupt(D0, zg_isr, HIGH);
+	attachInterrupt(D2, zg_isr, HIGH);
 #endif
 
 #ifdef USE_DIG8_INTR
