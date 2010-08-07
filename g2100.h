@@ -298,5 +298,6 @@ U8* zg_get_mac();
 void zg_set_ssid(U8* ssid, U8 ssid_len);
 void zg_set_sec(U8 sec_type, U8* sec_key, U8 sec_key_len);
 void zg_drv_process();
+void zg_read_chip_info_block();
 
 #endif /* G2100_H_ */

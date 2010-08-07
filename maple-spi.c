@@ -35,6 +35,14 @@
 #include "maple-spi.h"
 #include "maple-util.h"
 
+// ZG2100 SPI HAL
+
+int led0_bit = 0;
+int led1_bit = 0;
+int led2_bit = 0;
+int led3_bit = 0;
+int led_conn_bit = 0;
+
 void enable_interrupt(uint8 channel) {
 
     // copied from exti_attach_interrupt() in libmaple/exti.c
@@ -105,8 +113,8 @@ void SPI1_Init() {
   MapleSPIFrequency freq;
   uint32 spi_num, endian, prescale;
 
-  //serialUsbPrintlnWaitForInput("***In SPI1_Init()");
-  serialUsbPrintln("***In SPI1_Init()");
+  serialUsbPrintlnWaitForInput("***In SPI1_Init()");
+  //serialUsbPrintln("***In SPI1_Init()");
 
   // set up CS pin
   ZG2100_CSInit();
@@ -117,19 +125,12 @@ void SPI1_Init() {
   // init SPI
   spi_num = 1;
   endian = MSBFIRST;
-  freq = MAPLE_SPI_4_5MHZ;
+  //freq = MAPLE_SPI_4_5MHZ;
+  freq = MAPLE_SPI_9MHZ;
   prescale = prescaleFactors[freq]; // only valid for SPI1
   spi_init(spi_num, prescale, endian, 0);
 
   //serialUsbPrintlnWaitForInput("*** Done with spi_init.");
   serialUsbPrintln("*** Done with spi_init.");
 }
-
-// ZG2100 SPI HAL
-
-int led0_bit = 0;
-int led1_bit = 0;
-int led2_bit = 0;
-int led3_bit = 0;
-int led_conn_bit = 0;
 

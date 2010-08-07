@@ -15,7 +15,7 @@
 
 #define USB_TIMEOUT 50
 
-const char *hex = "01234567890ABCDEF";
+const char *hex = "0123456789ABCDEF";
 
 void serialUsbInit() {
     setupUSB();
@@ -158,9 +158,8 @@ void blinkyConn() {
 
 void serialUsbPrintHex(uint8 byte) {
   char upper, lower;
-  upper = byte &= 0xF0;
-  upper = upper >> 4;
-  lower = byte &= 0x0F;
+  upper = byte >> 4;
+  lower = (byte &= 0x0F);
   serialUsbWrite(hex[upper]);
   serialUsbWrite(hex[lower]);
 }

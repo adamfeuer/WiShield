@@ -93,6 +93,8 @@ MapleSPIFrequency {
 
 // ZG2100 SPI HAL
 
+#define ZG_READ_REG_CMD                         0x40
+
 void zg2100_isr_enable(uint8 channel);
 
 #define ZG2100_ISR_DISABLE()                    nvic_disable_interrupts();
