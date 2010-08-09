@@ -87,13 +87,17 @@ MapleSPIFrequency {
    MAPLE_MAX_SPI_FREQS   = 8,
 } MapleSPIFrequency;
 
+
+uint8 zg_spi_tx_byte(uint32 spi_num, uint8 data);
+
 #define SPI1                                    1
-#define SPI1_SendByte(Data)		        spi_tx_byte(SPI1, Data); 
+#define SPI1_SendByte(Data)		        zg_spi_tx_byte(SPI1, Data) 
 #define SPI1_RecvByte()				spi_rx(SPI1)
 
 // ZG2100 SPI HAL
 
 #define ZG_READ_REG_CMD                         0x40
+
 
 void zg2100_isr_enable(uint8 channel);
 

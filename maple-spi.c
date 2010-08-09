@@ -34,6 +34,7 @@
 #include "wirish.h"
 #include "maple-spi.h"
 #include "maple-util.h"
+#include "spi.h"
 
 // ZG2100 SPI HAL
 
@@ -85,7 +86,6 @@ void zg2100_isr_enable(uint8 channel) {
 
    // enable USB interrupts so the bootloader will continue to work
    nvic_enable_interrupt(NVIC_INT_USBHP);
-   nvic_enable_interrupt(NVIC_INT_USBLP);
 }
 
 /*
@@ -111,26 +111,75 @@ static const uint32 prescaleFactors[MAPLE_MAX_SPI_FREQS] = {
 
 void SPI1_Init() {
   MapleSPIFrequency freq;
-  uint32 spi_num, endian, prescale;
+  uint32 spi_num, endian, prescale, mode;
 
   serialUsbPrintlnWaitForInput("***In SPI1_Init()");
   //serialUsbPrintln("***In SPI1_Init()");
 
   // set up CS pin
   ZG2100_CSInit();
-  ZG2100_CSoff();
+  ZG2100_CSon();
 
   pinMode(D2, INPUT);
 
   // init SPI
   spi_num = 1;
-  endian = MSBFIRST;
+  endian = SPI_MSBFIRST;
   //freq = MAPLE_SPI_4_5MHZ;
   freq = MAPLE_SPI_9MHZ;
   prescale = prescaleFactors[freq]; // only valid for SPI1
-  spi_init(spi_num, prescale, endian, 0);
+  mode = 0;
+  spi_init(spi_num, prescale, endian, mode);
 
   //serialUsbPrintlnWaitForInput("*** Done with spi_init.");
   serialUsbPrintln("*** Done with spi_init.");
 }
 
+/**
+ * @brief SPI synchronous 8-bit write, blocking.
+ * @param spi_num which spi to send on
+ * @return data shifted back from the slave
+ */
+uint8 zg_spi_tx_byte(uint32 spi_num, uint8 data) {
+   SPI *spi;
+
+   ASSERT(spi_num == 1 || spi_num == 2);
+
+   spi = (spi_num == 1) ? (SPI*)SPI1_BASE : (SPI*)SPI2_BASE;
+
+   spi->DR = data;
+
+   while ( !(spi->SR & SR_TXE)   ||
+           !(spi->SR & SR_RXNE)  ||
+	    (spi->SR & SR_BSY))
+     ;
+
+   return spi->DR;
+}
+
+/*
+uint8 zg_spi_tx(uint32 spi_num, uint8 *buf, uint32 len) {
+   SPI *spi;
+   uint32 i = 0;
+   uint8 rc;
+
+   ASSERT(spi_num == 1 || spi_num == 2);
+   spi = (spi_num == 1) ? (SPI*)SPI1_BASE : (SPI*)SPI2_BASE;
+
+   if (!len) {
+      return 0;
+   }
+
+   while (i < len) {
+      spi->DR = buf[i];
+      while (!(spi->SR & SR_TXE) ||
+              (spi->SR & SR_BSY) ||
+             !(spi->SR & SR_RXNE))
+         ;
+      rc = spi->DR;
+      i++;
+   }
+   return rc;
+}
+
+*/

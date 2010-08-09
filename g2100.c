@@ -90,7 +90,9 @@ void zg_init()
 	zg_buf_len = UIP_BUFSIZE;
 
 	zg_chip_reset();
+
         zg_read_chip_info_block();
+
 	zg_interrupt2_reg();
 	zg_interrupt_reg(0xff, 0);
 	zg_interrupt_reg(0x80|0x40, 1);
@@ -112,8 +114,9 @@ void spi_transfer(volatile U8* buf, U16 len, U8 toggle_cs)
 	        serialUsbWriteStr("tx byte: ");
 	        serialUsbPrintHex(buf[i]);
                 serialUsbWriteStr("   ");
-		ZG2100_SpiSendData(buf[i]);		// Start the transmission
-		buf[i] = ZG2100_SpiRecvData();
+      		//ZG2100_SpiSendData(buf[i]);		// Start the transmission
+	      	//buf[i] = ZG2100_SpiRecvData();
+		buf[i] = ZG2100_SpiSendData(buf[i]);		// transmit and receive
                 serialUsbWriteStr("rx byte: ");
                 serialUsbPrintHex(buf[i]);
                 serialUsbPrintNewline();
@@ -236,8 +239,7 @@ void zg_interrupt_reg(U8 mask, U8 state)
 
 void zg_isr()
 {
-	ZG2100_ISR_DISABLE();
-	serialUsbPrintlnWaitForInput("in zg_isr");
+        ZG2100_ISR_DISABLE();
 	intr_occured = 1;
 }
 
@@ -674,15 +676,39 @@ void zg_drv_process()
 	}
 }
 
+/*
 void zg_read_chip_info_block() {
    serialUsbPrintln("Reading Chip Info Block:");
    serialUsbPrintln("Byte 1:");
    hdr[0] = 0x21 | ZG_READ_REG_CMD;
    hdr[1] = 0x00;
-   serialUsbPrintln("Byte 0:");
    spi_transfer(hdr, 2, 1);
+   serialUsbPrintln("Byte 0:");
+   hdr[0] = 0x21 | ZG_READ_REG_CMD;
+   hdr[1] = 0x00;
+   spi_transfer(hdr, 2, 1);
+   serialUsbPrintln("Byte -1:");
+   hdr[0] = 0x21 | ZG_READ_REG_CMD;
+   hdr[1] = 0x00;
+   spi_transfer(hdr, 2, 1);
+   serialUsbPrintln("Byte -2:");
+   hdr[0] = 0x21 | ZG_READ_REG_CMD;
+   hdr[1] = 0x00;
+   spi_transfer(hdr, 2, 1);
+   serialUsbPrintln("Byte -3:");
    hdr[0] = 0x21 | ZG_READ_REG_CMD;
    hdr[1] = 0x00;
    spi_transfer(hdr, 2, 1);
    serialUsbPrintlnWaitForInput("Read Chip Info Block - done");
 }
+*/
+
+void zg_read_chip_info_block() {
+   serialUsbPrintln("Reading Chip Info Block:");
+   hdr[0] = 0x21 | ZG_READ_REG_CMD;
+   hdr[1] = 0x00;
+   hdr[2] = 0x00;
+   spi_transfer(hdr, 3, 1);
+   serialUsbPrintlnWaitForInput("Read Chip Info Block - done");
+}
+
